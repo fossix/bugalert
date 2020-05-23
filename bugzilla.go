@@ -3,11 +3,13 @@ package itracker
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 )
 
 type Bug struct {
 	*Bugzilla
+	sync.Mutex
 	Blocks              []int         `json:"blocks"`
 	IsCcAccessible      bool          `json:"is_cc_accessible"`
 	Keywords            []string      `json:"keywords"`
@@ -47,6 +49,7 @@ type Bug struct {
 	Component           string        `json:"component"`
 	TargetMilestone     string        `json:"target_milestone"`
 	Product             string        `json:"product"`
+	History             []*History    `json:"history"`
 	// custom fields
 	CustomFields interface{}
 }
@@ -60,6 +63,20 @@ type Flag struct {
 	Setter           string    `json:"setter"`
 	Requestee        string    `json:"requestee"`
 	CreationDate     time.Time `json:"creation_date"`
+}
+
+type History struct {
+	When    time.Time `json:"when"`
+	Who     string    `json:"who"`
+	Changes []struct {
+		Added     string `json:"added"`
+		FieldName string `json:"field_name"`
+		Removed   string `json:"removed"`
+	} `json:"changes"`
+}
+
+type HistoryList struct {
+	History []History `json:"history"`
 }
 
 type Bugzilla struct {
@@ -175,4 +192,48 @@ func (b *Bugzilla) GetUser(id string) (*User, error) {
 
 	u.Users[0].Bugzilla = b
 	return &u.Users[0], nil
+}
+
+func (bug *Bug) GetHistory() error {
+	bug.Lock()
+	defer bug.Unlock()
+
+	// don't fetch if already available
+	if len(bug.History) > 0 {
+		return nil
+	}
+
+	endpoint := fmt.Sprintf("bug/%d/history", bug.ID)
+	body, err := bug.get(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	type _bugs struct {
+		Bugs []struct {
+			History []*History `json:"history"`
+		} `json:"bugs"`
+		Alias string `json:"alias"`
+		ID    int    `json:"id"`
+	}
+
+	var bugs _bugs
+
+	if err := json.Unmarshal(body, &bugs); err != nil {
+		return err
+	}
+
+	if len(bugs.Bugs) == 0 {
+		return fmt.Errorf("Cannot find history for bug")
+	}
+	if len(bugs.Bugs) > 1 {
+		return fmt.Errorf("Unexpected output, expected 1, got %d", len(bugs.Bugs))
+	}
+
+	t := bugs.Bugs[0]
+	for _, h := range t.History {
+		bug.History = append(bug.History, h)
+	}
+
+	return nil
 }
