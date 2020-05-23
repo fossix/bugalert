@@ -10,7 +10,7 @@ type User struct {
 	ID       int           `json:"id"`
 }
 
-func (u *User) Bugs() ([]Bug, error) {
+func (u *User) Bugs() ([]*Bug, error) {
 	args, err := makeargs([]string{"assigned_to"}, []string{u.Email})
 	if err != nil {
 		return nil, err

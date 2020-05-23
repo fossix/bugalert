@@ -95,14 +95,14 @@ func (b *Bugzilla) get(api string, args map[string]string) ([]byte, error) {
 	return get(endpoint, args)
 }
 
-func (b *Bugzilla) GetBugs(args map[string]string) ([]Bug, error) {
+func (b *Bugzilla) GetBugs(args map[string]string) ([]*Bug, error) {
 	body, err := b.get("bug", args)
 	if err != nil {
 		return nil, err
 	}
 
 	type _bugs struct {
-		Bugs   []Bug         `json:"bugs"`
+		Bugs   []*Bug        `json:"bugs"`
 		Faults []interface{} `json:"faults"`
 	}
 
@@ -115,14 +115,12 @@ func (b *Bugzilla) GetBugs(args map[string]string) ([]Bug, error) {
 		return nil, fmt.Errorf("No bugs found")
 	}
 
-	var bugs []Bug
-
 	for _, bug := range _b.Bugs {
 		bug.Bugzilla = b
-		bugs = append(bugs, bug)
+		go bug.GetHistory()
 	}
 
-	return bugs, nil
+	return _b.Bugs, nil
 }
 
 func (b *Bugzilla) GetBug(id int) (*Bug, error) {
@@ -140,7 +138,7 @@ func (b *Bugzilla) GetBug(id int) (*Bug, error) {
 		return nil, fmt.Errorf("Unexpected output, expected 1, got %d", len(bugs))
 	}
 
-	return &bugs[0], nil
+	return bugs[0], nil
 }
 
 func (bug *Bug) GetAssignee() (*User, error) {
