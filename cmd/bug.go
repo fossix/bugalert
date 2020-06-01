@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fossix/itracker"
+	"github.com/fossix/bugalert/pkg/itracker"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

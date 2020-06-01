@@ -14,7 +14,7 @@ type Bug struct {
 	IsCcAccessible      bool          `json:"is_cc_accessible"`
 	Keywords            []string      `json:"keywords"`
 	URL                 string        `json:"url"`
-	QaContact           string        `json:"qa_contact"`
+	QaContactID         string        `json:"qa_contact"`
 	UpdateToken         string        `json:"update_token"`
 	CcDetail            []User        `json:"cc_detail"`
 	Summary             string        `json:"summary"`
@@ -24,20 +24,20 @@ type Bug struct {
 	IsCreatorAccessible bool          `json:"is_creator_accessible"`
 	IsConfirmed         bool          `json:"is_confirmed"`
 	Priority            string        `json:"priority"`
-	AssignedToDetail    User          `json:"assigned_to_detail"`
-	Creator             string        `json:"creator"`
+	AssignedTo          User          `json:"assigned_to_detail"`
+	CreatorID           string        `json:"creator"`
 	LastChangeTime      time.Time     `json:"last_change_time"`
-	CreatorDetail       User          `json:"creator_detail"`
+	Creator             User          `json:"creator_detail"`
 	Cc                  []string      `json:"cc"`
 	SeeAlso             []interface{} `json:"see_also"`
 	Groups              []interface{} `json:"groups"`
-	AssignedTo          string        `json:"assigned_to"`
+	AssignedToID        string        `json:"assigned_to"`
 	CreationTime        time.Time     `json:"creation_time"`
 	Whiteboard          string        `json:"whiteboard"`
 	ID                  int           `json:"id"`
-	DependsOn           []interface{} `json:"depends_on"`
-	DupeOf              interface{}   `json:"dupe_of"`
-	QaContactDetail     User          `json:"qa_contact_detail"`
+	DependsOn           []int         `json:"depends_on"`
+	DupeOf              int           `json:"dupe_of"`
+	QaContact           User          `json:"qa_contact_detail"`
 	Resolution          string        `json:"resolution"`
 	Classification      string        `json:"classification"`
 	Alias               []interface{} `json:"alias"`
@@ -159,7 +159,7 @@ func (b *Bugzilla) GetBug(id int) (*Bug, error) {
 }
 
 func (bug *Bug) GetAssignee() (*User, error) {
-	u := &bug.AssignedToDetail
+	u := &bug.AssignedTo
 	if u == nil {
 		return nil, fmt.Errorf("Bug not assigned yet")
 	}
