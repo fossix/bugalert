@@ -9,12 +9,15 @@ import (
 func init() {
 	rootCmd.AddCommand(versionCmd)
 
-	listCmd.Flags().BoolP("all", "a", false,
-		"Show all issues, don't restrict to user")
+	listCmd.Flags().BoolP("all", "a", false, "Show all issues, don't restrict to user")
 	listCmd.Flags().StringP("user", "u", "", "Show bugs associated with user")
-
-	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(listCmd)
+
+	showCmd.Flags().Bool("fuller", false, "Show more details of the bug shown")
+	showCmd.Flags().Bool("fullest", false, "Show everything related to the bug")
+	rootCmd.AddCommand(showCmd)
+
+	rootCmd.AddCommand(historyCmd)
 }
 
 var rootCmd = &cobra.Command{
