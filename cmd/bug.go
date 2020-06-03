@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/fossix/bugalert/pkg/itracker"
 	"github.com/spf13/cobra"
@@ -9,7 +10,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
-
 	"strings"
 )
 
@@ -35,6 +35,39 @@ func bugSummary(bug *itracker.Bug) {
 
 	fmt.Printf("QA Contact: %s <%s>\n",
 		bug.QaContact.RealName, bug.QaContact.Email)
+}
+
+func bugDescription(bug *itracker.Bug) {
+	fmt.Println()
+
+	scanner := bufio.NewScanner(strings.NewReader(bug.Description.Text))
+	for scanner.Scan() {
+		fmt.Println("   ", scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println()
+	}
+}
+
+func print_indented(text string) {
+	scanner := bufio.NewScanner(strings.NewReader(text))
+
+	for scanner.Scan() {
+		fmt.Println("   ", scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func bugComments(bug *itracker.Bug) {
+	for _, c := range bug.Comments {
+		fmt.Printf("\nOn %s, %s wrote:\n",
+			c.CreationTime.Format("02/01/2006"), c.Creator)
+		print_indented(c.Text)
+	}
 }
 
 func getConfig() (*BugConfig, error) {
@@ -113,6 +146,10 @@ func showBug(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	if err = bug.GetComments(); err != nil {
+		panic(err)
+	}
+
 	fullest, _ := cmd.Flags().GetBool("fullest")
 	if fullest {
 		// Should do a pretty json dump
@@ -122,31 +159,34 @@ func showBug(cmd *cobra.Command, args []string) {
 
 	bugSummary(bug)
 	fuller, _ := cmd.Flags().GetBool("fuller")
-	if !fuller {
-		return
+	if fuller {
+		fmt.Println("Resolution:", bug.Resolution)
+		fmt.Print("Blocks: ")
+		if len(bug.Blocks) > 0 {
+			fmt.Println(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(bug.Blocks)), ", "), "[]"))
+		} else {
+			fmt.Println("None")
+		}
+
+		fmt.Print("Depends on: ")
+		if len(bug.DependsOn) > 0 {
+			fmt.Println(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(bug.DependsOn)), ", "), "[]"))
+		} else {
+			fmt.Println("None")
+		}
+
+		if bug.DupeOf != 0 {
+			fmt.Println("Duplicate of:", bug.DupeOf)
+		}
+
+		if len(bug.Cc) > 0 {
+			fmt.Println("CC:", strings.Join(bug.Cc, ", "))
+		}
 	}
 
-	fmt.Println("Resolution:", bug.Resolution)
-	fmt.Print("Blocks: ")
-	if len(bug.Blocks) > 0 {
-		fmt.Println(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(bug.Blocks)), ", "), "[]"))
-	} else {
-		fmt.Println("None")
-	}
-
-	fmt.Print("Depends on: ")
-	if len(bug.DependsOn) > 0 {
-		fmt.Println(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(bug.DependsOn)), ", "), "[]"))
-	} else {
-		fmt.Println("None")
-	}
-
-	if bug.DupeOf != 0 {
-		fmt.Println("Duplicate of:", bug.DupeOf)
-	}
-
-	if len(bug.Cc) > 0 {
-		fmt.Println("CC:", strings.Join(bug.Cc, ", "))
+	bugDescription(bug)
+	if comments, _ := cmd.Flags().GetBool("comments"); comments {
+		bugComments(bug)
 	}
 }
 

@@ -15,6 +15,7 @@ func init() {
 
 	showCmd.Flags().Bool("fuller", false, "Show more details of the bug shown")
 	showCmd.Flags().Bool("fullest", false, "Show everything related to the bug")
+	showCmd.Flags().Bool("comments", false, "Show comments on this bug")
 	rootCmd.AddCommand(showCmd)
 
 	rootCmd.AddCommand(historyCmd)
