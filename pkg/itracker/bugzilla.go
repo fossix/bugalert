@@ -40,7 +40,7 @@ type Bug struct {
 	QaContact           User          `json:"qa_contact_detail"`
 	Resolution          string        `json:"resolution"`
 	Classification      string        `json:"classification"`
-	Alias               []interface{} `json:"alias"`
+	Alias               []string      `json:"alias"`
 	OpSys               string        `json:"op_sys"`
 	Status              string        `json:"status"`
 	IsOpen              bool          `json:"is_open"`
@@ -50,6 +50,8 @@ type Bug struct {
 	TargetMilestone     string        `json:"target_milestone"`
 	Product             string        `json:"product"`
 	History             []*History    `json:"history"`
+	Comments            []*Comment    `json:"comments"`
+	Description         Comment
 	// custom fields
 	CustomFields interface{}
 }
@@ -75,8 +77,18 @@ type History struct {
 	} `json:"changes"`
 }
 
-type HistoryList struct {
-	History []History `json:"history"`
+type Comment struct {
+	Time         time.Time `json:"time"`
+	Text         string    `json:"text"`
+	BugID        int       `json:"bug_id"`
+	Count        int       `json:"count"`
+	AttachmentID int       `json:"attachment_id"`
+	IsPrivate    bool      `json:"is_private"`
+	IsMarkdown   bool      `json:"is_markdown"`
+	Tags         []string  `json:"tags"`
+	Creator      string    `json:"creator"`
+	CreationTime time.Time `json:"creation_time"`
+	ID           int       `json:"id"`
 }
 
 type Bugzilla struct {
@@ -134,7 +146,6 @@ func (b *Bugzilla) GetBugs(args map[string]string) ([]*Bug, error) {
 
 	for _, bug := range _b.Bugs {
 		bug.Bugzilla = b
-		go bug.GetHistory()
 	}
 
 	return _b.Bugs, nil
@@ -198,11 +209,6 @@ func (bug *Bug) GetHistory() error {
 	bug.Lock()
 	defer bug.Unlock()
 
-	// don't fetch if already available
-	if len(bug.History) > 0 {
-		return nil
-	}
-
 	endpoint := fmt.Sprintf("bug/%d/history", bug.ID)
 	body, err := bug.get(endpoint, nil)
 	if err != nil {
@@ -233,6 +239,35 @@ func (bug *Bug) GetHistory() error {
 	t := bugs.Bugs[0]
 	for _, h := range t.History {
 		bug.History = append(bug.History, h)
+	}
+
+	return nil
+}
+
+func (bug *Bug) GetComments() error {
+	bug.Lock()
+	defer bug.Unlock()
+
+	endpoint := fmt.Sprintf("bug/%d/comment", bug.ID)
+	body, err := bug.get(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	var comments map[string]map[int]struct{ Comments []*Comment }
+
+	if err := json.Unmarshal(body, &comments); err != nil {
+		return err
+	}
+
+	b := comments["bugs"][bug.ID]
+
+	for _, t := range b.Comments {
+		if t.Count == 0 {
+			bug.Description = *t
+			continue
+		}
+		bug.Comments = append(bug.Comments, t)
 	}
 
 	return nil
