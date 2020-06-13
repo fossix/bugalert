@@ -1,24 +1,13 @@
 package cmd
 
 import (
+	"log"
 	"strings"
 )
 
 func errLog(err error) {
 	if err != nil {
-		panic(err)
-	}
-}
-
-func errFatal(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func errWarn(err error) {
-	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 

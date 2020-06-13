@@ -11,7 +11,6 @@ const (
 	BUGZILLA VendorType = "bugzilla"
 )
 
-type Itracker interface{}
 
 type Tracker struct {
 	url      string
