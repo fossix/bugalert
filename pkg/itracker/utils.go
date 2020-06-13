@@ -26,10 +26,10 @@ func makeargs(keys []string, values []string) (map[string]string, error) {
 
 // create a URL by adding the maps as request params. If the values in the map
 // are separated by a "|", then a separate param will be added for the same key.
-func getURL(endpoint string, args map[string]string) string {
+func getURL(endpoint string, args map[string]string) (string, error) {
 	base, err := url.Parse(endpoint)
 	if err != nil {
-		return ""
+		return "", err
 	}
 
 	params := url.Values{}
@@ -42,11 +42,14 @@ func getURL(endpoint string, args map[string]string) string {
 
 	base.RawQuery = params.Encode()
 
-	return base.String()
+	return base.String(), nil
 }
 
 func get(endpoint string, args map[string]string) ([]byte, error) {
-	url := getURL(endpoint, args)
+	url, err := getURL(endpoint, args)
+	if err != nil {
+		return nil, err
+	}
 
 	timeout := time.Duration(globalTimeout) * time.Second
 	client := http.Client{

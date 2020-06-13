@@ -3,14 +3,17 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/fossix/bugalert/pkg/itracker"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+
+	"github.com/fossix/bugalert/pkg/itracker"
 )
 
 type BugConfig struct {
@@ -72,27 +75,27 @@ func bugComments(bug *itracker.Bug) {
 	}
 }
 
-func getConfig() (*BugConfig, error) {
+func getConfig() *BugConfig {
 	u, err := user.Current()
 	if err != nil {
-		return nil, (err)
+		log.Fatal(err)
 	}
 
 	f, err := ioutil.ReadFile(filepath.Join(u.HomeDir, ".bugalert.yml"))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	conf := BugConfig{}
 	err = yaml.Unmarshal(f, &conf)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	return &conf, nil
+	return &conf
 }
 
-func getBugzilla(conf *BugConfig) (*itracker.Tracker, error) {
+func getBugzilla(conf *BugConfig) *itracker.Tracker {
 	timeout := 10
 
 	bz, _ := itracker.NewTracker(itracker.BUGZILLA, conf.URL)
@@ -102,15 +105,15 @@ func getBugzilla(conf *BugConfig) (*itracker.Tracker, error) {
 	}
 	bz.SetTimeout(timeout)
 
-	return bz, nil
+	return bz
 }
 
 func listBug(cmd *cobra.Command, args []string) {
 	var bugs []*itracker.Bug
 	var err error
 
-	conf, _ := getConfig()
-	bz, _ := getBugzilla(conf)
+	conf := getConfig()
+	bz := getBugzilla(conf)
 	username := conf.DefaultUser
 	filter := conf.DefaultFilter
 
@@ -152,8 +155,8 @@ func listBug(cmd *cobra.Command, args []string) {
 }
 
 func showBug(cmd *cobra.Command, args []string) {
-	conf, _ := getConfig()
-	bz, _ := getBugzilla(conf)
+	conf := getConfig()
+	bz := getBugzilla(conf)
 
 	b, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -209,8 +212,8 @@ func showBug(cmd *cobra.Command, args []string) {
 }
 
 func showHistory(cmd *cobra.Command, args []string) {
-	conf, _ := getConfig()
-	bz, _ := getBugzilla(conf)
+	conf := getConfig()
+	bz := getBugzilla(conf)
 
 	b, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -227,8 +230,10 @@ func showHistory(cmd *cobra.Command, args []string) {
 	}
 
 	bugSummary(bug)
-	var prev_when string
-	var prev_who string
+	var (
+		prev_when,
+		prev_who string
+	)
 	for _, h := range bug.History {
 		when := h.When.Format("2006, January 02")
 		who := h.Who
@@ -253,7 +258,7 @@ func showHistory(cmd *cobra.Command, args []string) {
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list all bugs/issues",
-	Long: `This command lists all the bugs and issues. If default_user
+	Long: `Lists all the bugs and issues. If default_user
 config option is set to a user id, then only bugs associated with
 that user is listed. This can be overridden with --user option.`,
 	Run: listBug,
@@ -262,7 +267,7 @@ that user is listed. This can be overridden with --user option.`,
 var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "show bug/issue details",
-	Long: `This command shows the given bug's details. More details can
+	Long: `Show the given bug's details. More details can
 be obtained with --fuller/--fullest options.`,
 	Args: cobra.ExactArgs(1),
 	Run:  showBug,
@@ -271,7 +276,7 @@ be obtained with --fuller/--fullest options.`,
 var historyCmd = &cobra.Command{
 	Use:   "history",
 	Short: "show bug history",
-	Long:  `This command shows the given bug's history.`,
+	Long:  "Display given bug's history.",
 	Args:  cobra.ExactArgs(1),
 	Run:   showHistory,
 }
