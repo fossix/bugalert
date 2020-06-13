@@ -1,5 +1,6 @@
 # bugalert
 
+![Go](https://github.com/fossix/bugalert/workflows/Go/badge.svg?branch=master)
 _Work in progress_
 
 A git like interface for working with bugs and issues.
