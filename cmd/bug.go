@@ -114,18 +114,23 @@ func listBug(cmd *cobra.Command, args []string) {
 	if username == "" {
 		username = conf.DefaultUser
 	}
-	if username == "" {
-		fmt.Println("Warning: default_user config or --user option is not provided. Fetching all items")
-	}
 
-	user, err := bz.GetUser(username)
-	if err != nil {
-		panic(err)
-	}
-
-	bugs, err := user.Bugs()
-	if err != nil {
-		panic(err)
+	var bugs []*itracker.Bug;
+	if username != "" {
+		user, err := bz.GetUser(username)
+		if err != nil {
+			panic(err)
+		}
+		bugs, err = user.Bugs()
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		fmt.Println("Warning: default_user config or --user option not provided. Fetching all items")
+		bugs, err = bz.GetBugs(nil)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	for _, b := range bugs {
