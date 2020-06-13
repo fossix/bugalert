@@ -14,11 +14,13 @@ import (
 )
 
 type BugConfig struct {
-	URL         string   `yaml:"url"`
-	APIKey      string   `yaml:"api_key"`
-	Users       []string `yaml:"user_list"`
-	DefaultUser string   `yaml:"default_user"`
-	TimeOut     int      `yaml:"timeout"`
+	URL           string   `yaml:"url"`
+	APIKey        string   `yaml:"api_key"`
+	Users         []string `yaml:"user_list"`
+	DefaultUser   string   `yaml:"default_user"`
+	TimeOut       int      `yaml:"timeout"`
+	DefaultFilter string   `yaml:"default_filter"`
+	filtermap     map[string]string
 }
 
 func bugSummary(bug *itracker.Bug) {
@@ -104,37 +106,48 @@ func getBugzilla(conf *BugConfig) (*itracker.Tracker, error) {
 }
 
 func listBug(cmd *cobra.Command, args []string) {
+	var bugs []*itracker.Bug
+	var err error
+
 	conf, _ := getConfig()
 	bz, _ := getBugzilla(conf)
+	username := conf.DefaultUser
+	filter := conf.DefaultFilter
 
-	username, err := cmd.Flags().GetString("user")
-	if err != nil {
-		panic(err)
-	}
-	if username == "" {
-		username = conf.DefaultUser
+	if _filter, err := cmd.Flags().GetString("filter"); err == nil {
+		if _filter != "" {
+			filter = _filter
+		}
 	}
 
-	var bugs []*itracker.Bug;
-	if username != "" {
+	if skipfilter, _ := cmd.Flags().GetBool("nofilter"); skipfilter == false {
+		conf.filtermap = makeFilter(filter)
+	}
+
+	if _username, err := cmd.Flags().GetString("user"); err == nil {
+		if _username != "" {
+			username = _username
+		}
+	}
+
+	allusers, _ := cmd.Flags().GetBool("all")
+	if username != "" && allusers == false {
 		user, err := bz.GetUser(username)
-		if err != nil {
-			panic(err)
-		}
-		bugs, err = user.Bugs()
-		if err != nil {
-			panic(err)
-		}
+		errLog(err)
+
+		bugs, err = user.Bugs(conf.filtermap)
+		errLog(err)
 	} else {
-		fmt.Println("Warning: default_user config or --user option not provided. Fetching all items")
-		bugs, err = bz.GetBugs(nil)
-		if err != nil {
-			panic(err)
+		// user didn't specify '-a' explicitly, so print a warning
+		if allusers == false {
+			fmt.Println("Warning: default_user config or --user option not provided. Fetching all items")
 		}
+		bugs, err = bz.GetBugs(conf.filtermap)
+		errLog(err)
 	}
 
 	for _, b := range bugs {
-		fmt.Println(b.ID, b.Summary)
+		fmt.Printf("%7d [ %-10s] %s\n", b.ID, b.Status, b.Summary)
 	}
 }
 

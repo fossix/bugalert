@@ -11,6 +11,8 @@ func init() {
 
 	listCmd.Flags().BoolP("all", "a", false, "Show all issues, don't restrict to user")
 	listCmd.Flags().StringP("user", "u", "", "Show bugs associated with user")
+	listCmd.Flags().StringP("filter", "", "", "Show bugs filtered by the given condition")
+	listCmd.Flags().BoolP("nofilter", "", false, "Don't filter bugs, skip default filter too")
 	rootCmd.AddCommand(listCmd)
 
 	showCmd.Flags().Bool("fuller", false, "Show more details of the bug shown")

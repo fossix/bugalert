@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,8 @@ func makeargs(keys []string, values []string) (map[string]string, error) {
 	return args, nil
 }
 
+// create a URL by adding the maps as request params. If the values in the map
+// are separated by a "|", then a separate param will be added for the same key.
 func getURL(endpoint string, args map[string]string) string {
 	base, err := url.Parse(endpoint)
 	if err != nil {
@@ -30,8 +33,11 @@ func getURL(endpoint string, args map[string]string) string {
 	}
 
 	params := url.Values{}
-	for k, v := range args {
-		params.Add(k, v)
+	for key, value := range args {
+		values := strings.Split(value, "|")
+		for _, v := range values {
+			params.Add(key, v)
+		}
 	}
 
 	base.RawQuery = params.Encode()

@@ -10,12 +10,17 @@ type User struct {
 	ID       int           `json:"id"`
 }
 
-func (u *User) Bugs() ([]*Bug, error) {
-	args, err := makeargs([]string{"assigned_to"}, []string{u.Email})
-	if err != nil {
-		return nil, err
+func (u *User) Bugs(filter map[string]string) ([]*Bug, error) {
+	var _filter map[string]string
+
+	if filter == nil {
+		_filter = make(map[string]string)
+	} else {
+		_filter = filter
 	}
-	bugs, err := u.GetBugs(args)
+
+	_filter["assigned_to"] = u.Email
+	bugs, err := u.GetBugs(_filter)
 	if err != nil {
 		return nil, err
 	}
