@@ -40,6 +40,7 @@ The API key for accessing bugzilla can be obtained from `API Keys` tab in
 
 ### Basic Usage
 
+#### Listing
 List all the bugs, no filtering, and for all users.
 
 ```
@@ -52,8 +53,18 @@ Override the default filter in the config file, and also the default user.
 bugalert list --filter "status:CLOSED|NEEDINFO" --user somebody@example.com
 ```
 
-Further more information about a particular bug can be obtained with the `show`
-and `history` commands.
+The listing can be ordered by the last changed time using the `--order`
+option. The `--limit N` option can limit the listing to `N`. The below command
+gets a list of the last 10 bugs that were closed
+
+
+```
+bugalert list --filter "status:CLOSED" --limit 10 --order
+```
+
+#### Show & History
+More information about a particular bug can be obtained with the `show` and
+`history` commands.
 
 ```
 bugalert show 100
