@@ -124,7 +124,7 @@ func listBug(cmd *cobra.Command, args []string) {
 	}
 
 	if skipfilter, _ := cmd.Flags().GetBool("nofilter"); skipfilter == false {
-		conf.filtermap = makeFilter(filter)
+		conf.filtermap = makeFilter(conf.filtermap, filter)
 	}
 
 	if _username, err := cmd.Flags().GetString("user"); err == nil {

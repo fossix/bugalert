@@ -13,12 +13,15 @@ func errLog(err error) {
 
 // creates a map from a string of form "key:value"; multiple such pairs are
 // separated by a semicolon
-func makeFilter(filterlist string) map[string]string {
+func makeFilter(fmap map[string]string, filterlist string) map[string]string {
 	if filterlist == "" {
 		return nil
 	}
 
-	fmap := make(map[string]string)
+	if fmap == nil {
+		fmap = make(map[string]string)
+	}
+
 	fpairs := strings.Split(filterlist, ";")
 	for _, p := range fpairs {
 		m := strings.Split(p, ":")
