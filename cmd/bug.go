@@ -7,6 +7,7 @@ import (
 	"log"
 	"os/user"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -127,6 +128,13 @@ func listBug(cmd *cobra.Command, args []string) {
 		conf.filtermap = makeFilter(conf.filtermap, filter)
 	}
 
+	order, _ := cmd.Flags().GetBool("order")
+	// I don't see the bugs really sorted with the 'order' parameter. Should
+	// be fairly easy like the code below if it does.
+	//
+	// order := fmt.Sprintf("order:%s", order_field)
+	// conf.filtermap = makeFilter(conf.filtermap, order)
+
 	if _username, err := cmd.Flags().GetString("user"); err == nil {
 		if _username != "" {
 			username = _username
@@ -147,6 +155,19 @@ func listBug(cmd *cobra.Command, args []string) {
 		}
 		bugs, err = bz.GetBugs(conf.filtermap)
 		errLog(err)
+	}
+
+	if limit, _ := cmd.Flags().GetInt("limit"); limit != 0 {
+		if limit > len(bugs) {
+			limit = len(bugs)
+		}
+		bugs = bugs[len(bugs)-limit : len(bugs)]
+	}
+
+	if order == true {
+		sort.Slice(bugs, func(i, j int) bool {
+			return bugs[i].LastChangeTime.Before(bugs[j].LastChangeTime)
+		})
 	}
 
 	for _, b := range bugs {

@@ -14,6 +14,12 @@ func init() {
 	listCmd.Flags().StringP("user", "u", "", "Show bugs associated with user")
 	listCmd.Flags().StringP("filter", "", "", "Show bugs filtered by the given condition")
 	listCmd.Flags().BoolP("nofilter", "", false, "Don't filter bugs, skip default filter too")
+	listCmd.Flags().Int("limit", 0, "List bugs sort by ascending, limiting to N")
+	// Bugzilla doesn't seem to send a sorted array. We will do it manually
+	// and only sort by last_change_time. If bugzilla works, then the choice
+	// can be given to the user on the fields to sort.
+	// listCmd.Flags().String("order", "last_change_time", "Sort the bugs by the given field [Default is last_change_time]")
+	listCmd.Flags().Bool("order", false, "Sort the bugs by last changed time")
 	rootCmd.AddCommand(listCmd)
 
 	showCmd.Flags().Bool("fuller", false, "Show more details of the bug shown")
