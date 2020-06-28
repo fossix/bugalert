@@ -7,6 +7,55 @@ import (
 	"time"
 )
 
+type UpdateFieldAlias struct {
+	add    []string `json:"add"`
+	remove []string `json:"remove"`
+	set    []string `json:"set"`
+}
+
+type UpdateFieldBlocks struct {
+	add    []int `json:"add"`
+	remove []int `json:"remove"`
+	set    []int `json:"set"`
+}
+
+type UpdateFieldDepends struct {
+	add    []int `json:"add"`
+	remove []int `json:"remove"`
+	set    []int `json:"set"`
+}
+
+type UpdateFieldCC struct {
+	add    []int `json:"add"`
+	remove []int `json:"remove"`
+}
+
+type UpdateFieldComment struct {
+	Body     string `json:"comment"`
+	Private  bool   `json:"is_private"`
+	MarkDown bool   `json:"is_markdown"`
+}
+
+type UpdateFieldKeyWords struct {
+	add    []string `json:"add"`
+	remove []string `json:"remove"`
+	set    []string `json:"set"`
+}
+
+type BugUpdate struct {
+	ID              []int               `json"ids"`
+	Aliases         UpdateFieldAlias    `json:"alias,omitempty"`
+	AssignedTo      string              `json:"assigned_to,omitempty"`
+	Blocks          UpdateFieldBlocks   `json:"blocks,omitempty"`
+	Depends         UpdateFieldDepends  `json:"depends_on,omitempty"`
+	CC              UpdateFieldCC       `json:"cc,omitempty"`
+	CCAccessible    bool                `json:"is_cc_accessible,omitempty"`
+	Comment         UpdateFieldComment  `json:"comment,omitempty"`
+	PrivateComments []int               `json:"comment_is_private,omitempty"`
+	CommentTags     []string            `json:"comment_tags,omitempty"`
+	Keywords        UpdateFieldKeyWords `json:"keywords,omitempty"`
+}
+
 type Bug struct {
 	*Bugzilla
 	sync.Mutex
@@ -122,6 +171,17 @@ func (b *Bugzilla) get(api string, args map[string]string) ([]byte, error) {
 	args["api_key"] = b.apikey
 
 	return get(endpoint, args)
+}
+
+func (b *Bugzilla) put(api string, args map[string]string, data []byte) error {
+	endpoint := fmt.Sprintf("%s/%s/%s", b.url, b.endpoint, api)
+
+	if args == nil {
+		args = make(map[string]string)
+	}
+	args["api_key"] = b.apikey
+
+	return put(endpoint, args, data)
 }
 
 func (b *Bugzilla) GetBugs(args map[string]string) ([]*Bug, error) {
@@ -269,6 +329,23 @@ func (bug *Bug) GetComments() error {
 		}
 		bug.Comments = append(bug.Comments, t)
 	}
+
+	return nil
+}
+
+func (bug *Bug) Update(update *BugUpdate) error {
+	bug.Lock()
+	defer bug.Unlock()
+
+	endpoint := fmt.Sprintf("bug/%d", bug.ID)
+
+	update.ID = append(update.ID, bug.ID)
+	j, err := json.MarshalIndent(update, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	bug.put(endpoint, nil, j)
 
 	return nil
 }

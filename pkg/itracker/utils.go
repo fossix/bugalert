@@ -1,6 +1,7 @@
 package itracker
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -77,4 +78,32 @@ func get(endpoint string, args map[string]string) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func put(endpoint string, args map[string]string, data []byte) error {
+	url, err := getURL(endpoint, args)
+	if err != nil {
+		return err
+	}
+
+	timeout := time.Duration(globalTimeout) * time.Second
+	client := http.Client{
+		Timeout: timeout,
+	}
+
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf(http.StatusText(resp.StatusCode))
+	}
+
+	return nil
 }

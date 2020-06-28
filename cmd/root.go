@@ -29,6 +29,10 @@ func init() {
 	showCmd.Flags().Bool("comments", false, "Show comments on this bug")
 	rootCmd.AddCommand(showCmd)
 
+	// The 'comment' command
+	commentCmd.Flags().StringP("message", "m", "", "Add comment to bug")
+	rootCmd.AddCommand(commentCmd)
+
 	// The 'history' Command
 	rootCmd.AddCommand(historyCmd)
 }

@@ -22,6 +22,7 @@ type BugConfig struct {
 	TimeOut       int      `yaml:"timeout"`
 	DefaultFilter string   `yaml:"default_filter"`
 	filtermap     map[string]string
+	doMarkdown    bool
 }
 
 func bugSummary(bug *itracker.Bug) {
