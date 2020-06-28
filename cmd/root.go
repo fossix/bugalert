@@ -10,6 +10,7 @@ import (
 func init() {
 	rootCmd.AddCommand(versionCmd)
 
+	// the 'list' command
 	listCmd.Flags().BoolP("all", "a", false, "Show all issues, don't restrict to user")
 	listCmd.Flags().StringP("user", "u", "", "Show bugs associated with user")
 	listCmd.Flags().StringP("filter", "", "", "Show bugs filtered by the given condition")
@@ -22,11 +23,13 @@ func init() {
 	listCmd.Flags().Bool("order", false, "Sort the bugs by last changed time")
 	rootCmd.AddCommand(listCmd)
 
+	// The 'show' command
 	showCmd.Flags().Bool("fuller", false, "Show more details of the bug shown")
 	showCmd.Flags().Bool("fullest", false, "Show everything related to the bug")
 	showCmd.Flags().Bool("comments", false, "Show comments on this bug")
 	rootCmd.AddCommand(showCmd)
 
+	// The 'history' Command
 	rootCmd.AddCommand(historyCmd)
 }
 
