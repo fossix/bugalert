@@ -74,6 +74,16 @@ bugalert history 100
 
 100 in the example is the bug ID.
 
+#### Updating
+
+To add a new comment for bug 12345
+
+```
+bugalert comment 12345
+```
+
+This will open a editor, where the comment can be typed in and saved. A comment
+can also be provided using the `-m` option.
 
 ### TODO
 - [ ] Support to update bugs/add comments
