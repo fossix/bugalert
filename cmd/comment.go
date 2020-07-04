@@ -69,19 +69,27 @@ func addComment(cmd *cobra.Command, args []string) {
 	}
 
 	message, _ := cmd.Flags().GetString("message")
+	origmsg := message
 	quote, _ := cmd.Flags().GetInt("quote")
-
 	if quote != -1 {
+		// Get a new message prefixed with the quote
 		message = quoteComment(bug, quote, message)
 	}
 
-	// open editor for getting the comment
-	// TODO this should be based on some condition, like 'quote this
-	// comment', 'let me recheck', or an explicit 'open editor'
-	comment, err := editorInput(message, cfprefix)
-	if err != nil {
-		errLog(err)
+	editComment, _ := cmd.Flags().GetBool("edit")
+	comment := []byte(message)
+	if origmsg == "" || editComment {
+		comment, err = editorInput(message, cfprefix)
+		if err != nil {
+			errLog(err)
+		}
 	}
+
+	if len(comment) == 0 {
+		fmt.Println("Empty comment message. Aborting.")
+		return
+	}
+
 	public, _ := cmd.Flags().GetBool("public")
 
 	var update itracker.BugUpdate
