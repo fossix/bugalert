@@ -83,10 +83,42 @@ bugalert comment 12345
 ```
 
 This will open a editor, where the comment can be typed in and saved. A comment
-can also be provided using the `-m` option.
+can also be provided using the `-m` option. To verify that everything is correct
+without actually updating the issue, a `--dry-run` flag can be passed.
+
+The previous comment can be quoted when adding a new comment. This comment can
+be obtained from the 'show --comments' listing, where the comment ID is shown as
+part of the comment header.
+
+```
+$ bugalert show --comments 12345
+12345  Very critical issue that needs to be fixed
+Status: WORKING
+Priority: P1
+Severity: ship issue
+Created on: 04/07/2020
+Creator: User1 <user1@example.com>
+Assigned to: User2 <user2@example.com>
+QA Contact: User1 <user1@example.com>
+
+Problem description here.
+
+[#100] On 04/07/2020, user2@example.com wrote:
+    This looks similar to #12344
+
+$ bugalert comment -q 100 -m "Can we mark this as duplicate of #12344?"
+```
+
+The command opens an editor for additional inputs, once the editor is closed, a
+new comment is added to the bug/issue.
+
+Note: If the message is empty, and nothing is updated in the editor, an empty
+comment is posted with only the quote. So make sure you pass a message with `-m`
+or enter text in the editor.
 
 ### TODO
-- [ ] Support to update bugs/add comments
+- [x] Support to update bugs/add comments
+- [ ] Caching of issues locally
 - [ ] Support to edit a bug and push
 - [ ] Add support for Github issues
-- [ ] Caching of issues locally
+
