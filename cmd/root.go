@@ -30,6 +30,9 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 
 	// The 'comment' command
+	commentCmd.Flags().Bool("public", false, "Posted comment will be public")
+	commentCmd.Flags().Bool("dry-run", false, "Don't do the actual update")
+	commentCmd.Flags().IntP("quote", "q", -1, "Quote the provided comment number")
 	commentCmd.Flags().StringP("message", "m", "", "Add comment to bug")
 	rootCmd.AddCommand(commentCmd)
 

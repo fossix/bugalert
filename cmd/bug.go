@@ -68,8 +68,8 @@ func print_indented(text string) {
 
 func bugComments(bug *itracker.Bug) {
 	for _, c := range bug.Comments {
-		fmt.Printf("\nOn %s, %s wrote:\n",
-			c.CreationTime.Format("02/01/2006"), c.Creator)
+		fmt.Printf("\n[#%d] On %s, %s wrote:\n",
+			c.ID, c.CreationTime.Format("02/01/2006"), c.Creator)
 		print_indented(c.Text)
 	}
 }

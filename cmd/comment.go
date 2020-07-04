@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -15,6 +16,38 @@ var commentCmd = &cobra.Command{
 	Long:  `Add/update comments and other details of bug/issue`,
 	Args:  cobra.ExactArgs(1),
 	Run:   addComment,
+}
+
+// Treats non-existent comment ID in the bug as empty comment and just returns
+// the message.
+func quoteComment(bug *itracker.Bug, commentID int, message string) string {
+	var commentText string
+	var commentCount int
+
+	if err := bug.GetComments(); err != nil {
+		panic(err)
+	}
+
+	for _, comment := range bug.Comments {
+		if comment.ID == commentID {
+			commentText = comment.Text
+			commentCount = comment.Count
+			break
+		}
+	}
+	if commentText == "" {
+		return message
+	}
+
+	newMessage := ""
+	for _, line := range strings.Split(commentText, "\n") {
+		newMessage = fmt.Sprintf("%s> %s\n", newMessage, line)
+	}
+
+	newMessage = fmt.Sprintf("(In reply to comment #%d)\n%s\n%s",
+		commentCount, newMessage, message)
+
+	return newMessage
 }
 
 func addComment(cmd *cobra.Command, args []string) {
@@ -36,6 +69,11 @@ func addComment(cmd *cobra.Command, args []string) {
 	}
 
 	message, _ := cmd.Flags().GetString("message")
+	quote, _ := cmd.Flags().GetInt("quote")
+
+	if quote != -1 {
+		message = quoteComment(bug, quote, message)
+	}
 
 	// open editor for getting the comment
 	// TODO this should be based on some condition, like 'quote this
@@ -44,11 +82,18 @@ func addComment(cmd *cobra.Command, args []string) {
 	if err != nil {
 		errLog(err)
 	}
+	public, _ := cmd.Flags().GetBool("public")
 
 	var update itracker.BugUpdate
 	update.Comment.Body = string(comment)
-	update.Comment.Private = true
+	update.Comment.Private = !public
 	update.Comment.MarkDown = conf.doMarkdown
 
-	bug.Update(&update)
+	if dryrun, _ := cmd.Flags().GetBool("dry-run"); dryrun == true {
+		fmt.Println("Comment is public? ", !update.Comment.Private)
+		fmt.Println("Markdown enabled? ", update.Comment.MarkDown)
+		fmt.Println(update.Comment.Body)
+	} else {
+		bug.Update(&update)
+	}
 }
