@@ -39,6 +39,9 @@ func init() {
 
 	// The 'log' Command
 	rootCmd.AddCommand(logCmd)
+
+	// Open bug in browser
+	rootCmd.AddCommand(openCmd)
 }
 
 var rootCmd = &cobra.Command{
