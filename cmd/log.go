@@ -49,12 +49,13 @@ func showLog(cmd *cobra.Command, args []string) {
 
 		for _, c := range h.Changes {
 			fmt.Printf("    %s: \n", c.FieldName)
-			if c.Added != "" {
-				fmt.Println("      + ", c.Added)
-			}
 			if c.Removed != "" {
-				fmt.Println("      - ", c.Removed)
+				fmt.Println(Removed("      - ", c.Removed))
 			}
+			if c.Added != "" {
+				fmt.Println(Added("      + ", c.Added))
+			}
+
 		}
 	}
 }
