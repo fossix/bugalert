@@ -1,7 +1,6 @@
 # bugalert
 
 ![Go](https://github.com/fossix/bugalert/workflows/Go/badge.svg?branch=master)
-_Work in progress_
 
 A git like interface for working with bugs and issues.
 
@@ -13,9 +12,11 @@ Usage:
   bugalert [command]
 
 Available Commands:
+  comment     Add comment bug/issue details
   help        Help about any command
-  history     show bug history
   list        list all bugs/issues
+  log         show bug history
+  open        Open bug in browser
   show        show bug/issue details
   version     Print version
 
@@ -23,7 +24,6 @@ Flags:
   -h, --help   help for bugalert
 
 Use "bugalert [command] --help" for more information about a command.
-
 ```
 
 Reads config from `~/.bugalert.yml`:
@@ -33,6 +33,10 @@ url: "https://bugzilla.example.com"
 api_key: XXXXXXYYYYYYYXXXXXXYYYYYYXXXXYYXYXYXY
 default_user: you@example.com
 default_filter: "status:OPEN|ASSIGNED"
+timeout: 60
+filters:
+  open: "status:OPEN|ASSIGNED"
+  version2: "status:OPEN;version:v2.0"
 ```
 
 The API key for accessing bugzilla can be obtained from `API Keys` tab in
@@ -51,6 +55,12 @@ Override the default filter in the config file, and also the default user.
 
 ```
 bugalert list --filter "status:CLOSED|NEEDINFO" --user somebody@example.com
+```
+
+Or list all the bugs using one of the pre-defined filters from your config file
+
+```
+bugalert list --by-filter open
 ```
 
 The listing can be ordered by the last changed time using the `--order`
