@@ -37,8 +37,8 @@ func init() {
 	commentCmd.Flags().StringP("message", "m", "", "Add comment to bug")
 	rootCmd.AddCommand(commentCmd)
 
-	// The 'history' Command
-	rootCmd.AddCommand(historyCmd)
+	// The 'log' Command
+	rootCmd.AddCommand(logCmd)
 }
 
 var rootCmd = &cobra.Command{

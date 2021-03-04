@@ -7,15 +7,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var historyCmd = &cobra.Command{
-	Use:   "history",
+var logCmd = &cobra.Command{
+	Use:   "log",
 	Short: "show bug history",
 	Long:  "Display given bug's history.",
 	Args:  cobra.ExactArgs(1),
-	Run:   showHistory,
+	Run:   showLog,
 }
 
-func showHistory(cmd *cobra.Command, args []string) {
+func showLog(cmd *cobra.Command, args []string) {
 	conf := getConfig()
 	bz := getBugzilla(conf)
 
