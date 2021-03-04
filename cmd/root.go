@@ -21,6 +21,7 @@ func init() {
 	// can be given to the user on the fields to sort.
 	// listCmd.Flags().String("order", "last_change_time", "Sort the bugs by the given field [Default is last_change_time]")
 	listCmd.Flags().Bool("order", false, "Sort the bugs by last changed time")
+	listCmd.Flags().StringP("by-filter", "", "", "Show bugs filtered by a predefined filter name")
 	rootCmd.AddCommand(listCmd)
 
 	// The 'show' command

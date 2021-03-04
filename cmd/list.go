@@ -24,6 +24,20 @@ func listBug(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	if filter_name, err := cmd.Flags().GetString("by-filter"); err == nil {
+		ok := true
+		if filter_name != "" {
+			if filter, ok = conf.Filters[filter_name]; !ok {
+				fmt.Println("Predefined filter", filter_name,
+					"not found, defined filters are:\n")
+				for k, v := range conf.Filters {
+					fmt.Printf("    %s: %s\n", k, v)
+				}
+				return
+			}
+		}
+	}
+
 	if skipfilter, _ := cmd.Flags().GetBool("nofilter"); skipfilter == false {
 		conf.filtermap = makeFilter(conf.filtermap, filter)
 	}

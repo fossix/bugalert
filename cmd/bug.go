@@ -15,12 +15,13 @@ import (
 )
 
 type BugConfig struct {
-	URL           string   `yaml:"url"`
-	APIKey        string   `yaml:"api_key"`
-	Users         []string `yaml:"user_list"`
-	DefaultUser   string   `yaml:"default_user"`
-	TimeOut       int      `yaml:"timeout"`
-	DefaultFilter string   `yaml:"default_filter"`
+	URL           string            `yaml:"url"`
+	APIKey        string            `yaml:"api_key"`
+	Users         []string          `yaml:"user_list"`
+	DefaultUser   string            `yaml:"default_user"`
+	TimeOut       int               `yaml:"timeout"`
+	DefaultFilter string            `yaml:"default_filter"`
+	Filters       map[string]string `yaml:"filters"`
 	filtermap     map[string]string
 	doMarkdown    bool
 }
