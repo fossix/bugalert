@@ -1,0 +1,10 @@
+(org-link-set-parameters
+ "bz"
+ :follow 'org-bugzilla-follow
+ :face '(:foreground "red")
+ :help-echo "Open bug in a browser.")
+
+
+(defun org-bugzilla-follow (link)
+  (message "Opening in browser")
+  (shell-command (format "bugalert open %s" link)))
