@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/fossix/bugalert/pkg/itracker"
+	"github.com/fossix/bugalert/pkg/tracker"
 )
 
 var commentCmd = &cobra.Command{
@@ -20,7 +20,7 @@ var commentCmd = &cobra.Command{
 
 // Treats non-existent comment ID in the bug as empty comment and just returns
 // the message.
-func quoteComment(bug *itracker.Bug, commentID int, message string) string {
+func quoteComment(bug *tracker.Bug, commentID int, message string) string {
 	var commentText string
 	var commentCount int
 
@@ -52,7 +52,7 @@ func quoteComment(bug *itracker.Bug, commentID int, message string) string {
 
 func addComment(cmd *cobra.Command, args []string) {
 	conf := getConfig()
-	bz := getBugzilla(conf)
+	bz := getTracker(conf)
 
 	b, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -92,7 +92,7 @@ func addComment(cmd *cobra.Command, args []string) {
 
 	public, _ := cmd.Flags().GetBool("public")
 
-	var update itracker.BugUpdate
+	var update tracker.BugUpdate
 	update.Comment.Body = string(comment)
 	update.Comment.Private = !public
 	update.Comment.MarkDown = conf.doMarkdown

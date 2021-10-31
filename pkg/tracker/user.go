@@ -1,4 +1,4 @@
-package itracker
+package tracker
 
 type User struct {
 	*Bugzilla
@@ -20,7 +20,7 @@ func (u *User) Bugs(filter map[string]string) ([]*Bug, error) {
 	}
 
 	_filter["assigned_to"] = u.Email
-	bugs, err := u.GetBugs(_filter)
+	bugs, err := u.Search(_filter)
 	if err != nil {
 		return nil, err
 	}

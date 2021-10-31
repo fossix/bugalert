@@ -6,15 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/fossix/bugalert/pkg/itracker"
+	"github.com/fossix/bugalert/pkg/tracker"
 )
 
 func listBug(cmd *cobra.Command, args []string) {
-	var bugs []*itracker.Bug
+	var bugs []*tracker.Bug
 	var err error
 
 	conf := getConfig()
-	bz := getBugzilla(conf)
+	bz := getTracker(conf)
 	username := conf.DefaultUser
 	filter := conf.DefaultFilter
 
@@ -67,7 +67,7 @@ func listBug(cmd *cobra.Command, args []string) {
 		if allusers == false {
 			fmt.Println("Warning: default_user config or --user option not provided. Fetching all items")
 		}
-		bugs, err = bz.GetBugs(conf.filtermap)
+		bugs, err = bz.Search(conf.filtermap)
 		errLog(err)
 	}
 
