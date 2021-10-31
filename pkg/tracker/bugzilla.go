@@ -1,4 +1,4 @@
-package itracker
+package tracker
 
 import (
 	"encoding/json"
@@ -146,20 +146,13 @@ type Bugzilla struct {
 	apikey   string
 }
 
-func NewBugzilla(url, endpoint string) *Bugzilla {
+func NewBugzilla(conf TrackerConfig) (*Bugzilla, error) {
 	bz := &Bugzilla{
-		url:      url,
-		endpoint: endpoint,
+		url:      conf.Url,
+		endpoint: conf.Endpoint,
+		apikey:   conf.ApiKey,
 	}
-	return bz
-}
-
-func (b *Bugzilla) SetAPIKey(key string) {
-	b.apikey = key
-}
-
-func (b *Bugzilla) SetRestEndPoint(endpoint string) {
-	b.endpoint = endpoint
+	return bz, nil
 }
 
 func (b *Bugzilla) get(api string, args map[string]string) ([]byte, error) {
@@ -184,7 +177,7 @@ func (b *Bugzilla) put(api string, args map[string]string, data []byte) error {
 	return put(endpoint, args, data)
 }
 
-func (b *Bugzilla) GetBugs(args map[string]string) ([]*Bug, error) {
+func (b *Bugzilla) Search(args map[string]string) ([]*Bug, error) {
 	body, err := b.get("bug", args)
 	if err != nil {
 		return nil, err
@@ -217,7 +210,7 @@ func (b *Bugzilla) GetBug(id int) (*Bug, error) {
 		return nil, err
 	}
 
-	bugs, err := b.GetBugs(args)
+	bugs, err := b.Search(args)
 	if err != nil {
 		return nil, err
 	}

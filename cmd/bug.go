@@ -11,7 +11,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/fossix/bugalert/pkg/itracker"
+	"github.com/fossix/bugalert/pkg/tracker"
 )
 
 type BugConfig struct {
@@ -26,7 +26,7 @@ type BugConfig struct {
 	doMarkdown    bool
 }
 
-func bugSummary(bug *itracker.Bug) {
+func bugSummary(bug *tracker.Bug) {
 	fmt.Println(bug.ID, bug.Summary)
 	fmt.Println("Status:", bug.Status)
 	fmt.Println("Priority:", bug.Priority)
@@ -42,7 +42,7 @@ func bugSummary(bug *itracker.Bug) {
 		bug.QaContact.RealName, bug.QaContact.Email)
 }
 
-func bugDescription(bug *itracker.Bug) {
+func bugDescription(bug *tracker.Bug) {
 	fmt.Println()
 
 	scanner := bufio.NewScanner(strings.NewReader(bug.Description.Text))
@@ -67,7 +67,7 @@ func print_indented(text string) {
 	}
 }
 
-func bugComments(bug *itracker.Bug) {
+func bugComments(bug *tracker.Bug) {
 	for _, c := range bug.Comments {
 		fmt.Printf("\n[#%d] On %s, %s wrote:\n",
 			c.ID, c.CreationTime.Format("02/01/2006"), c.Creator)
@@ -95,15 +95,18 @@ func getConfig() *BugConfig {
 	return &conf
 }
 
-func getBugzilla(conf *BugConfig) *itracker.Tracker {
+func getTracker(conf *BugConfig) tracker.Tracker {
 	timeout := 10
 
-	bz, _ := itracker.NewTracker(itracker.BUGZILLA, conf.URL)
-	bz.SetAPIKey(conf.APIKey)
+	tc := tracker.TrackerConfig{
+		Url:    conf.URL,
+		ApiKey: conf.APIKey,
+	}
+	bz, _ := tracker.NewTracker(tracker.BUGZILLA, tc)
 	if conf.TimeOut != 0 {
 		timeout = conf.TimeOut
 	}
-	bz.SetTimeout(timeout)
+	tracker.SetRequestTimeout(timeout)
 
 	return bz
 }

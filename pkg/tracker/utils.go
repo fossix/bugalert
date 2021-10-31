@@ -1,4 +1,4 @@
-package itracker
+package tracker
 
 import (
 	"bytes"

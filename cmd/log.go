@@ -17,7 +17,7 @@ var logCmd = &cobra.Command{
 
 func showLog(cmd *cobra.Command, args []string) {
 	conf := getConfig()
-	bz := getBugzilla(conf)
+	bz := getTracker(conf)
 
 	b, err := strconv.Atoi(args[0])
 	if err != nil {
