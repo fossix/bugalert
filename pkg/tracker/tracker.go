@@ -34,8 +34,6 @@ func NewTracker(vendor VendorType, conf TrackerConfig) (Tracker, error) {
 	default:
 		return nil, fmt.Errorf("Invalid vendor type")
 	}
-
-	return nil, nil
 }
 
 func SetRequestTimeout(timeout int) {
