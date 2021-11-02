@@ -1,8 +1,11 @@
 package tracker
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -155,7 +158,7 @@ func NewBugzilla(conf TrackerConfig) (*Bugzilla, error) {
 	return bz, nil
 }
 
-func (b *Bugzilla) get(api string, args map[string]string) ([]byte, error) {
+func (b *Bugzilla) Get(api string, args map[string]string) ([]byte, error) {
 	endpoint := fmt.Sprintf("%s/%s/%s", b.url, b.endpoint, api)
 
 	if args == nil {
@@ -166,7 +169,7 @@ func (b *Bugzilla) get(api string, args map[string]string) ([]byte, error) {
 	return get(endpoint, args)
 }
 
-func (b *Bugzilla) put(api string, args map[string]string, data []byte) error {
+func (b *Bugzilla) Put(api string, args map[string]string, data []byte) error {
 	endpoint := fmt.Sprintf("%s/%s/%s", b.url, b.endpoint, api)
 
 	if args == nil {
@@ -177,8 +180,51 @@ func (b *Bugzilla) put(api string, args map[string]string, data []byte) error {
 	return put(endpoint, args, data)
 }
 
+func (b *Bugzilla) Post(api string, args map[string]string, data []byte) ([]byte, error) {
+	endpoint := fmt.Sprintf("%s/%s/%s", b.url, b.endpoint, api)
+
+	if args == nil {
+		args = make(map[string]string)
+	}
+
+	args["api_key"] = b.apikey
+
+	url, err := getURL(endpoint, args)
+	if err != nil {
+		return nil, err
+	}
+
+	timeout := time.Duration(globalTimeout) * time.Second
+	client := http.Client{
+		Timeout: timeout,
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(http.StatusText(resp.StatusCode))
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
 func (b *Bugzilla) Search(args map[string]string) ([]*Bug, error) {
-	body, err := b.get("bug", args)
+	body, err := b.Get("bug", args)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +280,7 @@ func (bug *Bug) GetAssignee() (*User, error) {
 
 func (b *Bugzilla) GetUser(id string) (*User, error) {
 	endpoint := fmt.Sprintf("user/%s", id)
-	body, err := b.get(endpoint, nil)
+	body, err := b.Get(endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +309,7 @@ func (bug *Bug) GetHistory() error {
 	defer bug.Unlock()
 
 	endpoint := fmt.Sprintf("bug/%d/history", bug.ID)
-	body, err := bug.get(endpoint, nil)
+	body, err := bug.Get(endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -302,7 +348,7 @@ func (bug *Bug) GetComments() error {
 	defer bug.Unlock()
 
 	endpoint := fmt.Sprintf("bug/%d/comment", bug.ID)
-	body, err := bug.get(endpoint, nil)
+	body, err := bug.Get(endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -338,7 +384,7 @@ func (bug *Bug) Update(update *BugUpdate) error {
 		return err
 	}
 
-	bug.put(endpoint, nil, j)
+	bug.Put(endpoint, nil, j)
 
 	return nil
 }

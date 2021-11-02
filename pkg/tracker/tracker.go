@@ -5,26 +5,30 @@ import (
 	"fmt"
 )
 
-type VendorType string
+type TrackerType string
 
 const (
-	BUGZILLA VendorType = "bugzilla"
-	GITHUB   VendorType = "Github"
+	BUGZILLA TrackerType = "bugzilla"
+	GITHUB   TrackerType = "github"
 )
 
 type TrackerConfig struct {
 	Url      string
 	Endpoint string
 	ApiKey   string
+	Username string
+	Password string
 }
 
 type Tracker interface {
+	Get(string, map[string]string) ([]byte, error)
+	Post(string, map[string]string, []byte) ([]byte, error)
 	GetBug(id int) (*Bug, error)
 	Search(map[string]string) ([]*Bug, error)
 	GetUser(string) (*User, error)
 }
 
-func NewTracker(vendor VendorType, conf TrackerConfig) (Tracker, error) {
+func NewTracker(vendor TrackerType, conf TrackerConfig) (Tracker, error) {
 	switch vendor {
 	case BUGZILLA:
 		return NewBugzilla(conf)

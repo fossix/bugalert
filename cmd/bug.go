@@ -15,13 +15,14 @@ import (
 )
 
 type BugConfig struct {
-	URL           string            `yaml:"url"`
-	APIKey        string            `yaml:"api_key"`
-	Users         []string          `yaml:"user_list"`
-	DefaultUser   string            `yaml:"default_user"`
-	TimeOut       int               `yaml:"timeout"`
-	DefaultFilter string            `yaml:"default_filter"`
-	Filters       map[string]string `yaml:"filters"`
+	Tracker       tracker.TrackerType `yaml:"tracker"`
+	URL           string              `yaml:"url"`
+	APIKey        string              `yaml:"api_key"`
+	Users         []string            `yaml:"user_list"`
+	DefaultUser   string              `yaml:"default_user"`
+	TimeOut       int                 `yaml:"timeout"`
+	DefaultFilter string              `yaml:"default_filter"`
+	Filters       map[string]string   `yaml:"filters"`
 	filtermap     map[string]string
 	doMarkdown    bool
 }
@@ -102,7 +103,7 @@ func getTracker(conf *BugConfig) tracker.Tracker {
 		Url:    conf.URL,
 		ApiKey: conf.APIKey,
 	}
-	bz, _ := tracker.NewTracker(tracker.BUGZILLA, tc)
+	bz, _ := tracker.NewTracker(conf.Tracker, tc)
 	if conf.TimeOut != 0 {
 		timeout = conf.TimeOut
 	}

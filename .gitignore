@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+/tracker
 
 # Test binary, built with `go test -c`
 *.test
